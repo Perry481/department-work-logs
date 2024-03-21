@@ -15,7 +15,8 @@ const SidebarMenu = ({ onDepartmentChange, selectedDepartment }) => {
       {/* Brand Logo */}
       <a href="/" className="brand-link">
         <img
-          src="dist/img/AdminLTELogo.png"
+          src="dist/img/EBC/EBCimage.jpg
+          "
           alt="AdminLTE Logo"
           className="brand-image img-circle elevation-3"
         />
