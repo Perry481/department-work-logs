@@ -5,22 +5,15 @@ import SidebarMenu from "../components/SidebarMenu";
 import Footer from "../components/Footer";
 
 const App = ({ Component, pageProps }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState("Sales");
 
-  const handleButtonClick = () => {
-    setIsSidebarOpen((prev) => !prev); // Toggle the state
+  const handleDepartmentChange = (department) => {
+    setSelectedDepartment(department);
   };
 
-  const handleContentWrapperClick = () => {
-    const body = document.body;
-    const isOpen = body.classList.contains("sidebar-open");
-
-    if (isOpen) {
-      // Replace "sidebar-open" with "sidebar-closed" and remove "sidebar-collapse"
-      body.className = "sidebar-mini layout-fixed sidebar-closed";
-      setIsSidebarOpen(false); // Set the state to closed
-    }
-  };
+  useEffect(() => {
+    console.log(`setting the department: ${selectedDepartment}`);
+  }, [selectedDepartment]); // Add selectedDepartment as a dependency
 
   return (
     <>
@@ -29,14 +22,15 @@ const App = ({ Component, pageProps }) => {
         <title>工作日誌</title>
       </Head>
 
-      {/* <Navbar /> */}
-      <Navbar onButtonClick={handleButtonClick} />
-
-      <SidebarMenu />
+      <Navbar />
+      <SidebarMenu
+        onDepartmentChange={handleDepartmentChange}
+        selectedDepartment={selectedDepartment}
+      />
 
       <div className="content-wrapper">
         <div className="container-fluid">
-          <Component {...pageProps} />
+          <Component {...pageProps} selectedDepartment={selectedDepartment} />
         </div>
       </div>
       <Footer />

@@ -95,7 +95,7 @@ export default function Document() {
         <script src="plugins/jquery-knob/jquery.knob.min.js"></script>
         <script src="plugins/moment/moment.min.js"></script>
         <script src="plugins/daterangepicker/daterangepicker.js"></script>
-        <script src="plugins/select2/js/select2.full.min.js"></script>
+        <script src="plugins/select2/js/select2.full.js"></script>
         <script src="plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
         <script src="plugins/summernote/summernote-bs4.min.js"></script>
         <script src="plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>

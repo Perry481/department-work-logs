@@ -2,9 +2,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
 import FormComponent from "../components/formComponent";
 
-const HomePage = () => {
+const HomePage = ({ selectedDepartment }) => {
   const departmentSales = [
     "會議召開 (固定、臨時會議)",
     "客戶來訪接待",
@@ -40,8 +41,8 @@ const HomePage = () => {
     "製作治具",
     "支援產線",
   ];
-  const departmentmaterials = ["包裝", "文件製作", "送貨", "(空白)", "其他"];
-  const departmentQualiryAssurance = [
+  const departmentMaterials = ["包裝", "文件製作", "送貨", "(空白)", "其他"];
+  const departmentQualityAssurance = [
     "其他",
     "文件製作",
     "RoHS檢驗",
@@ -59,6 +60,85 @@ const HomePage = () => {
     "(空白)",
     "RDT測試",
   ];
+
+  const [apiData, setApiData] = useState(null);
+  // Function to fetch data from the API
+
+  let departmentOptions;
+  let departmentName;
+  switch (selectedDepartment) {
+    case "Sales":
+      departmentOptions = departmentSales;
+      departmentName = "業務";
+      break;
+    case "Industry":
+      departmentOptions = departmentIndustry;
+      departmentName = "工程";
+      break;
+    case "Materials":
+      departmentOptions = departmentMaterials;
+      departmentName = "資材";
+      break;
+    case "QualityAssurance":
+      departmentOptions = departmentQualityAssurance;
+      departmentName = "品保";
+      break;
+    default:
+      // Default to departmentSales if the selected department is not recognized
+      departmentOptions = departmentSales;
+      break;
+  }
+  const fetchDataFromAPI = async (departmentName) => {
+    let localizedDepartmentName;
+
+    // Set the localized department name based on the provided departmentName
+    switch (departmentName) {
+      case "Sales":
+        localizedDepartmentName = "業務";
+        break;
+      case "Industry":
+        localizedDepartmentName = "工程";
+        break;
+      case "Materials":
+        localizedDepartmentName = "資材";
+        break;
+      case "QualityAssurance":
+        localizedDepartmentName = "品保";
+        break;
+      default:
+        localizedDepartmentName = departmentName; // Default to the provided departmentName
+    }
+
+    console.log(localizedDepartmentName);
+
+    try {
+      // Make a GET request to your API endpoint with the departmentName as a query parameter
+      const response = await fetch(
+        `/api/getDB?departmentName=${encodeURIComponent(
+          localizedDepartmentName
+        )}`
+      );
+
+      // Check if the request was successful (status code 200)
+      if (!response.ok) {
+        throw new Error("Failed to fetch data from API");
+      }
+
+      // Parse the JSON response
+      const data = await response.json();
+
+      // Set the fetched data in state
+      setApiData(data);
+    } catch (error) {
+      // Handle any errors that occur during the fetch operation
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch data from the API when the selected department changes
+    fetchDataFromAPI(selectedDepartment);
+  }, [selectedDepartment]);
 
   return (
     <div className="col-12 col-sm-12">
@@ -88,15 +168,16 @@ const HomePage = () => {
                 aria-controls="tabs-logs-from-database"
                 aria-selected="false"
               >
-                工作日誌(業務)
+                工作日誌({departmentName})
               </a>
             </li>
           </ul>
         </div>
 
         <FormComponent
-          department={"Sales"}
-          departmentOptions={departmentSales}
+          department={departmentName}
+          departmentOptions={departmentOptions}
+          apiData={apiData}
         />
       </div>
     </div>

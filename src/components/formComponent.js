@@ -2,84 +2,79 @@ import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const FormComponent = ({ department, departmentOptions }) => {
+const FormComponent = ({ department, departmentOptions, apiData }) => {
   useEffect(() => {
-    // jsGrid configuration and initialization
-    var clients = [
-      {
-        Name: "Otto Clay",
-        Age: 25,
-        Country: 1,
-        Address: "Ap #897-1459 Quam Avenue",
-        Married: false,
-      },
-      {
-        Name: "Connor Johnston",
-        Age: 45,
-        Country: 2,
-        Address: "Ap #370-4647 Dis Av.",
-        Married: true,
-      },
-      {
-        Name: "Lacey Hess",
-        Age: 29,
-        Country: 3,
-        Address: "Ap #365-8835 Integer St.",
-        Married: false,
-      },
-      {
-        Name: "Timothy Henson",
-        Age: 56,
-        Country: 1,
-        Address: "911-5143 Luctus Ave",
-        Married: true,
-      },
-      {
-        Name: "Ramona Benton",
-        Age: 32,
-        Country: 3,
-        Address: "Ap #614-689 Vehicula Street",
-        Married: false,
-      },
-    ];
+    if (apiData) {
+      // Parse the API data and format it according to JSGrid's data structure
+      const formattedData = [];
+      Object.keys(apiData).forEach((key) => {
+        apiData[key].forEach((item) => {
+          const createdDateTime = new Date(item.CreatedTime);
+          const updatedDateTime = new Date(item.UpdatedTime);
 
-    var countries = [
-      { Name: "", Id: 0 },
-      { Name: "United States", Id: 1 },
-      { Name: "Canada", Id: 2 },
-      { Name: "United Kingdom", Id: 3 },
-    ];
+          // Adjust for the local timezone offset
+          const utcOffset = -8 * 60 * 60 * 1000;
 
-    $("#jsGrid").jsGrid({
-      width: "100%",
-      height: "400px",
-      inserting: false,
-      editing: false,
-      sorting: true,
-      paging: true,
-      data: clients,
-      fields: [
-        { name: "Name", type: "text", width: 150, validate: "required" },
-        { name: "Age", type: "number", width: 50 },
-        { name: "Address", type: "text", width: 200 },
-        {
-          name: "Country",
-          type: "select",
-          items: countries,
-          valueField: "Id",
-          textField: "Name",
-        },
-        {
-          name: "Married",
-          type: "checkbox",
-          title: "Is Married",
-          width: 70,
-          sorting: false,
-        },
-        // { type: "control" },
-      ],
-    });
-  }, []);
+          // Apply the offset to the created and updated date time
+          const localCreatedTime = new Date(
+            createdDateTime.getTime() + utcOffset
+          );
+          const localUpdatedTime = new Date(
+            updatedDateTime.getTime() + utcOffset
+          );
+
+          // Format the date and time
+          const createdDateStr = localCreatedTime.toISOString().split("T")[0];
+          const createdTimeStr = localCreatedTime.toTimeString().slice(0, 8); // Extract HH:mm:ss
+          const updatedDateStr = localUpdatedTime.toISOString().split("T")[0];
+          const updatedTimeStr = localUpdatedTime.toTimeString().slice(0, 8); // Extract HH:mm:ss
+
+          // Combine date and time strings
+          const formattedCreatedDateTime = `${createdDateStr} ${createdTimeStr}`;
+          const formattedUpdatedDateTime = `${updatedDateStr} ${updatedTimeStr}`;
+
+          formattedData.push({
+            標題: item.Title,
+            員工編號: item.PersonID,
+            客戶名稱: item.CustomerName,
+            專案名稱: item.ProjectName,
+            產品名稱: item.ProductName,
+            新呈料號: item.EverbizCode,
+            花費時間: item.WorkHour,
+            選項: item.JobTypeCode,
+            日期: formattedCreatedDateTime,
+            創建日期: formattedUpdatedDateTime,
+            備註: item.Remark,
+          });
+        });
+      });
+
+      // Initialize JSGrid with the formatted data
+      $("#jsGrid").jsGrid({
+        width: "100%",
+        height: "400px",
+        inserting: false,
+        editing: false,
+        sorting: true,
+        paging: true,
+        data: formattedData,
+        fields: [
+          { name: "標題", type: "text", width: 100 },
+          { name: "員工編號", type: "text", width: 100 },
+          { name: "客戶名稱", type: "text", width: 100 },
+          { name: "專案名稱", type: "text", width: 150 },
+          { name: "產品名稱", type: "text", width: 150 },
+          { name: "新呈料號", type: "text", width: 100 },
+          { name: "花費時間", type: "text", width: 50 },
+          { name: "選項", type: "text", width: 150 },
+          { name: "日期", type: "text", width: 150 },
+          { name: "創建日期", type: "text", width: 150 },
+          { name: "備註", type: "text", width: 150 },
+        ],
+      });
+    }
+  }, [apiData]);
+
   const selectRef = useRef(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -190,7 +185,7 @@ const FormComponent = ({ department, departmentOptions }) => {
 
       // Check if the response is successful
       if (response.ok) {
-        alert("Data inserted successfully!"); // Provide feedback to the user
+        alert("成功上傳至資料庫!"); // Provide feedback to the user
       } else {
         // Handle errors if the response is not successful
         const errorData = await response.json();
@@ -221,16 +216,18 @@ const FormComponent = ({ department, departmentOptions }) => {
   };
 
   useEffect(() => {
-    // Initialize Select2 when the component mounts
-    $(selectRef.current).select2({
+    // Initialize Select2 when the component mounts or department changes
+    const $select = $(selectRef.current);
+    $select.select2({
       closeOnSelect: false, // Keep the dropdown open after selecting an option
     });
 
-    // Ensure to destroy Select2 when the component unmounts to prevent memory leaks
     return () => {
-      $(selectRef.current).select2("destroy");
+      // Destroy Select2 when the component unmounts or department changes
+      $select.select2("destroy");
     };
-  }, []);
+  }, [department]); // Re-run this effect whenever the department changes
+
   return (
     <div className="card-body">
       <div className="tab-content" id="custom-tabs-four-tabContent">
@@ -241,7 +238,7 @@ const FormComponent = ({ department, departmentOptions }) => {
           role="tabpanel"
           aria-labelledby="tabs-add-logs-tab"
         >
-          <h5>新增日誌</h5>
+          <h5>新增日誌 {department}</h5>
           <div className="card-body">
             <div className="form-group">
               <label htmlFor="textInput">Title</label>
@@ -410,7 +407,7 @@ const FormComponent = ({ department, departmentOptions }) => {
         >
           <div className="row">
             <div className="col-12">
-              <h5>工作日誌 業務</h5>
+              <h5>工作日誌 {department}</h5>
               <div id="jsGrid"></div>
             </div>
           </div>
