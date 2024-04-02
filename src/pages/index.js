@@ -67,23 +67,23 @@ const HomePage = ({ selectedDepartment, departName, userID }) => {
   let departmentOptions;
   let departmentName;
   let departmentNameEng;
-  switch (departName) {
-    case "業務":
+  switch (selectedDepartment) {
+    case "Sales":
       departmentOptions = departmentSales;
       departmentName = "業務";
       departmentNameEng = "Sales";
       break;
-    case "工程":
+    case "Industry":
       departmentOptions = departmentIndustry;
       departmentName = "工程";
       departmentNameEng = "Industry";
       break;
-    case "採購":
+    case "Materials":
       departmentOptions = departmentMaterials;
       departmentName = "採購";
       departmentNameEng = "Materials";
       break;
-    case "品保":
+    case "QualityAssurance":
       departmentOptions = departmentQualityAssurance;
       departmentName = "品保";
       departmentNameEng = "QualityAssurance";
@@ -143,7 +143,6 @@ const HomePage = ({ selectedDepartment, departName, userID }) => {
   useEffect(() => {
     // Fetch data from the API when the selected department changes
     console.log(`selected department outside: ${selectedDepartment}`);
-    console.log(departName);
     fetchDataFromAPI(selectedDepartment);
   }, [selectedDepartment]);
 
@@ -175,7 +174,7 @@ const HomePage = ({ selectedDepartment, departName, userID }) => {
                 aria-controls="tabs-logs-from-database"
                 aria-selected="false"
               >
-                工作日誌({departName})
+                工作日誌({departmentName})
               </a>
             </li>
           </ul>
@@ -188,7 +187,6 @@ const HomePage = ({ selectedDepartment, departName, userID }) => {
           departmentNameEng={departmentNameEng}
           fetchDataFromAPI={fetchDataFromAPI}
           userID={userID}
-          departName={departName}
         />
       </div>
     </div>

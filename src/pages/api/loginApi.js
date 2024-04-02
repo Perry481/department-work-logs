@@ -8,7 +8,7 @@ export const config = {
 
 // Function to map DepartID to DepartName
 function getDepartName(departID) {
-  if (departID.startsWith("B513")) {
+  if (departID.startsWith("B51")) {
     return "智慧管理部";
   } else if (departID.startsWith("A0")) {
     return "CEO";

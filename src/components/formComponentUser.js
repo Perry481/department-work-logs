@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const FormComponent = ({
+const FormComponentUser = ({
   department,
   departmentOptions,
   apiData,
   departmentNameEng,
   fetchDataFromAPI,
   userID,
+  departName,
 }) => {
   useEffect(() => {
     if (apiData) {
@@ -320,7 +321,7 @@ const FormComponent = ({
           role="tabpanel"
           aria-labelledby="tabs-add-logs-tab"
         >
-          <h5>新增日誌 {department}</h5>
+          <h5>新增日誌 {departName}</h5>
           <div className="card-body">
             <div className="form-group">
               <label htmlFor="textInput">員工編號</label>
@@ -466,7 +467,7 @@ const FormComponent = ({
         >
           <div className="row">
             <div className="col-12">
-              <h5>工作日誌 {department}</h5>
+              <h5>工作日誌 {departName}</h5>
               <div id="jsGrid"></div>
             </div>
           </div>
@@ -476,4 +477,4 @@ const FormComponent = ({
   );
 };
 
-export default FormComponent;
+export default FormComponentUser;
