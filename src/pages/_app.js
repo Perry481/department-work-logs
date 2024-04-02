@@ -69,6 +69,7 @@ const App = ({ Component, pageProps }) => {
             onDepartmentChange={handleDepartmentChange}
             selectedDepartment={selectedDepartment}
             departName={departName}
+            userID={userID}
           />
 
           <div className="content-wrapper">

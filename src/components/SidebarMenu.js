@@ -5,6 +5,7 @@ const SidebarMenu = ({
   onDepartmentChange,
   selectedDepartment,
   departName,
+  userID,
 }) => {
   const handleClick = (department) => {
     console.log(`switching to :${department}`);
@@ -66,7 +67,7 @@ const SidebarMenu = ({
           </div>
           <div className="info">
             <a href="#" className="d-block">
-              User
+              使用者:{userID}
             </a>
           </div>
         </div>
