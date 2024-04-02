@@ -9,7 +9,7 @@
   box-sizing: border-box;
   cursor: pointer;
   display: block;
-  height: 28px;
+  height: auto;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -164,7 +164,9 @@
   .select2-selection--single
   .select2-selection__rendered {
   color: #444;
-  line-height: 28px;
+  line-height: 24px;
+  margin-top: 0;
+  min-height: 24px; /* Set a minimum height */
 }
 .select2-container--default
   .select2-selection--single

@@ -2,7 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const FormComponent = ({ department, departmentOptions, apiData }) => {
+const FormComponent = ({
+  department,
+  departmentOptions,
+  apiData,
+  departmentNameEng,
+  fetchDataFromAPI,
+  userID,
+  departName,
+}) => {
   useEffect(() => {
     if (apiData) {
       // Parse the API data and format it according to JSGrid's data structure
@@ -25,18 +33,21 @@ const FormComponent = ({ department, departmentOptions, apiData }) => {
 
           // Format the date and time
           const createdDateStr = localCreatedTime.toISOString().split("T")[0];
-          const createdTimeStr = localCreatedTime.toTimeString().slice(0, 8); // Extract HH:mm:ss
           const updatedDateStr = localUpdatedTime.toISOString().split("T")[0];
           const updatedTimeStr = localUpdatedTime.toTimeString().slice(0, 8); // Extract HH:mm:ss
 
           // Combine date and time strings
-          const formattedCreatedDateTime = `${createdDateStr} ${createdTimeStr}`;
+          const formattedCreatedDateTime = `${createdDateStr} `;
           const formattedUpdatedDateTime = `${updatedDateStr} ${updatedTimeStr}`;
 
+          // Include JobItemSgt property in each row
+          item.JobItemSgt = key;
+
           formattedData.push({
-            標題: item.Title,
+            JobItemSgt: key, // Include JobItemSgt property
+
             員工編號: item.PersonID,
-            客戶名稱: item.CustomerName,
+            客戶編號: item.CustomerName,
             專案名稱: item.ProjectName,
             產品名稱: item.ProductName,
             新呈料號: item.EverbizCode,
@@ -55,40 +66,146 @@ const FormComponent = ({ department, departmentOptions, apiData }) => {
         height: "400px",
         inserting: false,
         editing: false,
+        deleting: true,
         sorting: true,
         paging: true,
         data: formattedData,
+        deleteConfirm: "確定從資料庫中刪除此筆資料?", // Customize the confirmation message
         fields: [
-          { name: "標題", type: "text", width: 100 },
-          { name: "員工編號", type: "text", width: 100 },
-          { name: "客戶名稱", type: "text", width: 100 },
+          { name: "員工編號", type: "text", width: 100, editing: false },
+          { name: "客戶編號", type: "text", width: 100 },
           { name: "專案名稱", type: "text", width: 150 },
           { name: "產品名稱", type: "text", width: 150 },
           { name: "新呈料號", type: "text", width: 100 },
-          { name: "花費時間", type: "text", width: 50 },
+          { name: "花費時間", type: "text", width: 50 }, //less than 10 hours
           { name: "選項", type: "text", width: 150 },
-          { name: "日期", type: "text", width: 150 },
-          { name: "創建日期", type: "text", width: 150 },
-          { name: "備註", type: "text", width: 150 },
+          { name: "日期", type: "text", width: 100 },
+          { name: "創建日期", type: "text", width: 150, editing: false },
+          { name: "備註", type: "text", width: 125 },
+          {
+            type: "control",
+            deleteButton: true,
+            width: 75,
+            itemTemplate: (_, item) => {
+              const buttonWidth = $("#jsGrid")
+                .find("tr.jsgrid-insert-row")
+                .children()
+                .last()
+                .width(); // Get the width of the last column
+              return $("<button>")
+                .attr({
+                  class: "btn btn-danger btn-sm delete-btn",
+                  title: "Delete", // Add a title for tooltip
+                  "data-item-id": item.JobItemSgt, // Pass the JobItemSgt as data attribute
+                  style: `width: ${buttonWidth}px`, // Set the width of the button dynamically
+                })
+                .text("Delete")
+                .on("click", function () {
+                  // Trigger the onItemDeleting event when the delete button is clicked
+                  $("#jsGrid").jsGrid("deleteItem", item); // Trigger delete action
+                  console.log("deleting");
+                });
+            },
+          },
         ],
+        onItemDeleting: function (args) {
+          const deletedItem = args.item; // Item to be deleted
+          const jobItemSgt = deletedItem.JobItemSgt; // Access the JobItemSgt property directly
+          console.log("Deleting the JobItemSgt:", jobItemSgt);
+
+          // Make an API call to delete the item from the database
+          fetch(`/api/deleteDB`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              jobItemSgt: jobItemSgt,
+            }),
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              console.log("Item deleted successfully:", data);
+              alert("已刪除");
+              // Optionally, you can refresh the grid or perform any other action after successful deletion
+            })
+            .catch((error) => {
+              console.error("Error deleting item:", error);
+              // Handle error, show error message, etc.
+            });
+        },
+        onItemUpdated: function (args) {
+          const editedItem = args.item; // Get the edited item
+          const jobItemSgt = editedItem.JobItemSgt; // Access the JobItemSgt property of the edited item
+          console.log("Edited Item:", editedItem);
+          console.log("JobItemSgt of Edited Item:", jobItemSgt);
+        },
       });
     }
   }, [apiData]);
+  const handleTabClick = () => {
+    // Refresh the grid when the tab is clicked
+    console.log("Tab clicked, refreshing grid...");
+    setTimeout(() => {
+      $("#jsGrid").jsGrid("refresh");
+      // Trigger a resize event on the window object
+      window.dispatchEvent(new Event("resize"));
+    }, 750); // Delay of 100 milliseconds
+  };
+
+  useEffect(() => {
+    // Attach event listener to the tab when the component mounts
+    const tabElement = document.getElementById("tabs-logs-from-database-tab");
+    if (tabElement) {
+      tabElement.addEventListener("click", handleTabClick);
+
+      // Remove event listener when the component unmounts
+      return () => {
+        tabElement.removeEventListener("click", handleTabClick);
+      };
+    }
+  }, []); // Ensure this effect runs only once when the component mounts
 
   const selectRef = useRef(null);
+  const timeRef = useRef(null); // Change the name to timeRef or any other meaningful name
+
+  const timeOptions = [];
+  for (let i = 0; i <= 10; i += 0.5) {
+    timeOptions.push(i.toFixed(1));
+  }
+
   const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [selectValue, setSelectValue] = useState([]);
   const [inputValues, setInputValues] = useState({
-    titleName: "",
-    personID: "",
+    // personID: "",
     customerName: "",
     projName: "",
     prodName: "",
     prodID: "",
-    timeSpent: "",
     remark: "",
   });
+  //updating time
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 10000);
+
+    // Clean up interval on unmount
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Format the time to HH:mm
+  const formattedTime = currentTime.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setInputValues((prevValues) => ({
@@ -101,65 +218,28 @@ const FormComponent = ({ department, departmentOptions, apiData }) => {
     setSelectedDate(date);
   };
 
-  const handleTimeChange = (time) => {
-    setSelectedTime(time);
-  };
   const handleFormSubmit = async (event) => {
     // Prevent the default form submission
     event.preventDefault();
 
     // Validate the required fields
-    if (inputValues.titleName === "" || inputValues.personID === "") {
+    if (inputValues.personID === "") {
       // Optionally, provide user feedback or validation messages
       alert("必填區不能空白!");
       return; // Stop further processing
     }
-
-    // Log out the values
-    console.log("Department:", department);
-    console.log("Title:", inputValues.titleName);
-    console.log("Person ID:", inputValues.personID);
-    console.log("Customer Name:", inputValues.customerName);
-    console.log("Proj Name:", inputValues.projName);
-    console.log("Prod Name:", inputValues.prodName);
-    console.log("EverBiz Code:", inputValues.prodID);
-    console.log("Time Spent:", inputValues.timeSpent);
-    console.log("Remark:", inputValues.remark);
 
     // Access the current selection data using Select2 method
     const select2Data = $(selectRef.current).select2("data");
 
     // Extract only the 'id' or 'text' properties from the Select2 data
     const select2Values = select2Data.map((item) => item.id); // Change to 'text' if needed
+    const select2TimeValues = $(timeRef.current).val();
 
     // Format the date as 'YYYY/MM/DD'
     const formattedDate = selectedDate
       ? selectedDate.toLocaleDateString("en-US")
       : "";
-
-    const formattedTime = selectedTime
-      ? selectedTime.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false, // Set to false to use 24-hour format
-        })
-      : "";
-    console.log("Job Types:", select2Values);
-    console.log("Formatted Date:", formattedDate);
-    console.log("Formatted Time:", formattedTime);
-    const formattedDateTime = selectedDate
-      ? selectedDate.toLocaleDateString("en-US") +
-        " " +
-        (selectedTime
-          ? selectedTime.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false, // Set to false to use 24-hour format
-            })
-          : "")
-      : "";
-
-    console.log("Formatted Date and Time:", formattedDateTime);
 
     try {
       // Make the API call to insert data
@@ -169,23 +249,24 @@ const FormComponent = ({ department, departmentOptions, apiData }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: inputValues.titleName,
-          personId: inputValues.personID,
+          personId: userID,
           customerName: inputValues.customerName,
           projectName: inputValues.projName,
           productName: inputValues.prodName,
           everbizCode: inputValues.prodID,
-          workHour: inputValues.timeSpent,
+          workHour: select2TimeValues,
           jobTypes: select2Values,
           remark: inputValues.remark,
           departmentName: department,
-          createdTime: formattedDateTime,
+          createdTime: formattedDate,
         }),
       });
 
       // Check if the response is successful
       if (response.ok) {
         alert("成功上傳至資料庫!"); // Provide feedback to the user
+
+        fetchDataFromAPI(departmentNameEng);
       } else {
         // Handle errors if the response is not successful
         const errorData = await response.json();
@@ -198,32 +279,34 @@ const FormComponent = ({ department, departmentOptions, apiData }) => {
 
     // After processing, you can optionally clear the form values
     setInputValues({
-      titleName: "",
-      personID: "",
+      // personID: "",
       customerName: "",
       projName: "",
       prodName: "",
       prodID: "",
-      timeSpent: "",
+
       remark: "",
     });
 
     setSelectValue([]);
     setSelectedDate(null);
-    setSelectedTime(null);
-    const $select2 = $(selectRef.current);
-    $select2.val(null).trigger("change");
+
+    $(selectRef.current).val(null).trigger("change");
+    $(timeRef.current).val(null).trigger("change");
   };
 
   useEffect(() => {
     // Initialize Select2 when the component mounts or department changes
     const $select = $(selectRef.current);
+    const $timeSelect = $(timeRef.current);
+    $timeSelect.select2({
+      minimumResultsForSearch: -1,
+    });
     $select.select2({
       closeOnSelect: false, // Keep the dropdown open after selecting an option
     });
 
     return () => {
-      // Destroy Select2 when the component unmounts or department changes
       $select.select2("destroy");
     };
   }, [department]); // Re-run this effect whenever the department changes
@@ -238,24 +321,8 @@ const FormComponent = ({ department, departmentOptions, apiData }) => {
           role="tabpanel"
           aria-labelledby="tabs-add-logs-tab"
         >
-          <h5>新增日誌 {department}</h5>
+          <h5>新增日誌 {departName}</h5>
           <div className="card-body">
-            <div className="form-group">
-              <label htmlFor="textInput">Title</label>
-              <input
-                type="text"
-                className="form-control form-control-border"
-                id="textInput"
-                name="titleName"
-                placeholder="標題"
-                value={inputValues.titleName}
-                onChange={handleInputChange}
-                required // Add the required attribute
-              />
-              {inputValues.titleName === "" && (
-                <div className="text-danger">*必填</div>
-              )}
-            </div>
             <div className="form-group">
               <label htmlFor="textInput">員工編號</label>
               <input
@@ -264,8 +331,9 @@ const FormComponent = ({ department, departmentOptions, apiData }) => {
                 id="textInput"
                 name="personID"
                 placeholder="員工編號"
-                value={inputValues.personID}
-                onChange={handleInputChange}
+                value={userID}
+                disabled
+                // onChange={handleInputChange}
                 required // Add the required attribute
               />
               {inputValues.personID === "" && (
@@ -273,13 +341,13 @@ const FormComponent = ({ department, departmentOptions, apiData }) => {
               )}
             </div>
             <div className="form-group">
-              <label>客戶名稱</label>
+              <label>客戶編號</label>
               <input
                 type="text"
                 className="form-control form-control-border"
                 id="customerName"
                 name="customerName"
-                placeholder="客戶名稱"
+                placeholder="客戶編號"
                 value={inputValues.customerName}
                 onChange={handleInputChange}
               />
@@ -320,17 +388,19 @@ const FormComponent = ({ department, departmentOptions, apiData }) => {
                 onChange={handleInputChange}
               />
             </div>
+
             <div className="form-group">
-              <label>花費時間</label>
-              <input
-                type="text"
-                className="form-control form-control-border"
-                id="timeSpent"
-                name="timeSpent"
-                placeholder="花費時間"
-                value={inputValues.timeSpent}
-                onChange={handleInputChange}
-              />
+              <label>花費工時-小時</label>
+              <select
+                className="select2bs4 select2-hidden-accessible"
+                id="timeSelection"
+                style={{ width: "100%" }}
+                ref={timeRef}
+              >
+                {timeOptions.map((option, index) => (
+                  <option key={index}>{option}</option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">
@@ -361,20 +431,10 @@ const FormComponent = ({ department, departmentOptions, apiData }) => {
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group disabled">
               <label>時間</label>
               <br />
-              <DatePicker
-                selected={selectedTime}
-                onChange={handleTimeChange}
-                showTimeSelect
-                showTimeSelectOnly
-                dateFormat="HH:mm"
-                timeFormat="HH:mm"
-                placeholderText="選擇時間"
-                className="form-control form-control-border"
-                wrapperClassName="datePicker"
-              />
+              <div>{formattedTime}</div>
             </div>
             <div className="form-group">
               <label>備註</label>
@@ -407,7 +467,7 @@ const FormComponent = ({ department, departmentOptions, apiData }) => {
         >
           <div className="row">
             <div className="col-12">
-              <h5>工作日誌 {department}</h5>
+              <h5>工作日誌 {departName}</h5>
               <div id="jsGrid"></div>
             </div>
           </div>

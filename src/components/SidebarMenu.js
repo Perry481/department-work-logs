@@ -1,11 +1,30 @@
 import React, { forwardRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-const SidebarMenu = ({ onDepartmentChange, selectedDepartment }) => {
+const SidebarMenu = ({
+  onDepartmentChange,
+  selectedDepartment,
+  departName,
+}) => {
   const handleClick = (department) => {
     console.log(`switching to :${department}`);
+    console.log(`departName : ${departName}`);
     onDepartmentChange(department);
   };
+  console.log(`departName in sidebar${departName}`);
+  const handleConditionalClick = () => {
+    if (departName === "業務") {
+      onDepartmentChange("Sales");
+    } else if (departName === "工程") {
+      onDepartmentChange("Industry");
+    } else if (departName === "採購") {
+      onDepartmentChange("Materials");
+    } else if (departName === "品保") {
+      onDepartmentChange("QualityAssurance");
+    }
+  };
+
+  // handleConditionalClick();
 
   return (
     <aside
@@ -62,9 +81,7 @@ const SidebarMenu = ({ onDepartmentChange, selectedDepartment }) => {
           >
             <li className="nav-item">
               <div
-                className={`nav-link ${
-                  selectedDepartment === "Sales" ? "active" : ""
-                }`}
+                className={`nav-link ${departName === "業務" ? "active" : ""}`}
                 onClick={() => handleClick("Sales")}
               >
                 <i className="far fa-circle nav-icon" />
@@ -73,9 +90,7 @@ const SidebarMenu = ({ onDepartmentChange, selectedDepartment }) => {
             </li>
             <li className="nav-item">
               <div
-                className={`nav-link ${
-                  selectedDepartment === "Industry" ? "active" : ""
-                }`}
+                className={`nav-link ${departName === "工程" ? "active" : ""}`}
                 onClick={() => handleClick("Industry")}
               >
                 <i className="far fa-circle nav-icon" />
@@ -84,20 +99,16 @@ const SidebarMenu = ({ onDepartmentChange, selectedDepartment }) => {
             </li>
             <li className="nav-item">
               <div
-                className={`nav-link ${
-                  selectedDepartment === "Materials" ? "active" : ""
-                }`}
+                className={`nav-link ${departName === "採購" ? "active" : ""}`}
                 onClick={() => handleClick("Materials")}
               >
                 <i className="far fa-circle nav-icon" />
-                <p>資材部</p>
+                <p>採購部</p>
               </div>
             </li>
             <li className="nav-item">
               <div
-                className={`nav-link ${
-                  selectedDepartment === "QualityAssurance" ? "active" : ""
-                }`}
+                className={`nav-link ${departName === "品保" ? "active" : ""}`}
                 onClick={() => handleClick("QualityAssurance")}
               >
                 <i className="far fa-circle nav-icon" />

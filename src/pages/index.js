@@ -5,7 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import FormComponent from "../components/formComponent";
 
-const HomePage = ({ selectedDepartment }) => {
+const HomePage = ({ selectedDepartment, departName, userID }) => {
   const departmentSales = [
     "會議召開 (固定、臨時會議)",
     "客戶來訪接待",
@@ -66,22 +66,27 @@ const HomePage = ({ selectedDepartment }) => {
 
   let departmentOptions;
   let departmentName;
-  switch (selectedDepartment) {
-    case "Sales":
+  let departmentNameEng;
+  switch (departName) {
+    case "業務":
       departmentOptions = departmentSales;
       departmentName = "業務";
+      departmentNameEng = "Sales";
       break;
-    case "Industry":
+    case "工程":
       departmentOptions = departmentIndustry;
       departmentName = "工程";
+      departmentNameEng = "Industry";
       break;
-    case "Materials":
+    case "採購":
       departmentOptions = departmentMaterials;
-      departmentName = "資材";
+      departmentName = "採購";
+      departmentNameEng = "Materials";
       break;
-    case "QualityAssurance":
+    case "品保":
       departmentOptions = departmentQualityAssurance;
       departmentName = "品保";
+      departmentNameEng = "QualityAssurance";
       break;
     default:
       // Default to departmentSales if the selected department is not recognized
@@ -100,7 +105,7 @@ const HomePage = ({ selectedDepartment }) => {
         localizedDepartmentName = "工程";
         break;
       case "Materials":
-        localizedDepartmentName = "資材";
+        localizedDepartmentName = "採購";
         break;
       case "QualityAssurance":
         localizedDepartmentName = "品保";
@@ -137,6 +142,8 @@ const HomePage = ({ selectedDepartment }) => {
 
   useEffect(() => {
     // Fetch data from the API when the selected department changes
+    console.log(`selected department outside: ${selectedDepartment}`);
+    console.log(departName);
     fetchDataFromAPI(selectedDepartment);
   }, [selectedDepartment]);
 
@@ -168,7 +175,7 @@ const HomePage = ({ selectedDepartment }) => {
                 aria-controls="tabs-logs-from-database"
                 aria-selected="false"
               >
-                工作日誌({departmentName})
+                工作日誌({departName})
               </a>
             </li>
           </ul>
@@ -178,6 +185,10 @@ const HomePage = ({ selectedDepartment }) => {
           department={departmentName}
           departmentOptions={departmentOptions}
           apiData={apiData}
+          departmentNameEng={departmentNameEng}
+          fetchDataFromAPI={fetchDataFromAPI}
+          userID={userID}
+          departName={departName}
         />
       </div>
     </div>

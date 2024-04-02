@@ -4,7 +4,6 @@ export default async function handler(req, res) {
   try {
     // Extract data from the request body
     const {
-      title,
       personId,
       customerName,
       projectName,
@@ -31,15 +30,15 @@ export default async function handler(req, res) {
     try {
       // Define the SQL query to insert data into the table
       const sqlQuery = `
-        INSERT INTO [dbo].[absKPJobItem] (Title, PersonID, CustomerName, ProjectName, ProductName, EverbizCode, WorkHour, JobTypeCode, Remark, CreatedTime, UpdatedTime, DepartmentName)
-        VALUES (@Title, @PersonID, @CustomerName, @ProjectName, @ProductName, @EverbizCode, @WorkHour, @JobTypeCode, @Remark, @CreatedTime, GETDATE(), @DepartmentName);
+        INSERT INTO [dbo].[absKPJobItem] (PersonID, CustomerName, ProjectName, ProductName, EverbizCode, WorkHour, JobTypeCode, Remark, CreatedTime, UpdatedTime, DepartmentName)
+        VALUES (@PersonID, @CustomerName, @ProjectName, @ProductName, @EverbizCode, @WorkHour, @JobTypeCode, @Remark, @CreatedTime, GETDATE(), @DepartmentName);
       `;
 
       // Create a new SQL request
       const request = pool.request();
 
       // Set parameters for the query
-      request.input("Title", title);
+
       request.input("PersonID", personId);
       request.input("CustomerName", customerName);
       request.input("ProjectName", projectName);

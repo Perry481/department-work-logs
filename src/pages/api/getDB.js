@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     // Prepare the SQL query with a WHERE clause to filter by departmentName
     const sqlQuery = `
     SELECT TOP (1000) [JobItemSgt]
-    ,[Title]
+
     ,[PersonID]
     ,[CustomerName]
     ,[ProjectName]
