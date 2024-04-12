@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
+import EditForm from "./editForm";
 const FormComponent = ({
   department,
   departmentOptions,
@@ -10,6 +10,11 @@ const FormComponent = ({
   fetchDataFromAPI,
   userID,
 }) => {
+  // State to track whether editing mode is active
+  const [isEditing, setIsEditing] = useState(false);
+
+  // State to store the item being edited
+  const [editItem, setEditItem] = useState(null);
   useEffect(() => {
     if (apiData) {
       // Parse the API data and format it according to JSGrid's data structure
@@ -77,13 +82,16 @@ const FormComponent = ({
           { name: "產品名稱", type: "text", width: 150 },
           { name: "新呈料號", type: "text", width: 100 },
           { name: "花費時間", type: "text", width: 50 }, //less than 10 hours
-          { name: "選項", type: "text", width: 150 },
+          {
+            name: "選項",
+            type: "text",
+            width: 150,
+          },
           { name: "日期", type: "text", width: 100 },
           { name: "創建日期", type: "text", width: 150, editing: false },
           { name: "備註", type: "text", width: 125 },
           {
             type: "control",
-            deleteButton: true,
             width: 75,
             itemTemplate: (_, item) => {
               const buttonWidth = $("#jsGrid")
@@ -91,7 +99,21 @@ const FormComponent = ({
                 .children()
                 .last()
                 .width(); // Get the width of the last column
-              return $("<button>")
+
+              const $editButton = $("<button>")
+                .attr({
+                  class: "btn btn-primary btn-sm edit-btn",
+                  title: "Edit", // Add a title for tooltip
+                  "data-item-id": item.JobItemSgt, // Pass the JobItemSgt as data attribute
+                  style: `width: ${buttonWidth}px`, // Set the width of the button dynamically
+                })
+                .text("Edit")
+                .on("click", function () {
+                  // Handle edit button click
+                  openEditForm(item); // Call a function to open the edit form with the item data
+                });
+
+              const $deleteButton = $("<button>")
                 .attr({
                   class: "btn btn-danger btn-sm delete-btn",
                   title: "Delete", // Add a title for tooltip
@@ -102,8 +124,10 @@ const FormComponent = ({
                 .on("click", function () {
                   // Trigger the onItemDeleting event when the delete button is clicked
                   $("#jsGrid").jsGrid("deleteItem", item); // Trigger delete action
-                  console.log("deleting");
+                  console.log("Deleting", item);
                 });
+
+              return $("<div>").append($editButton, $deleteButton); // Append both buttons to a div and return
             },
           },
         ],
@@ -138,12 +162,6 @@ const FormComponent = ({
               // Handle error, show error message, etc.
             });
         },
-        onItemUpdated: function (args) {
-          const editedItem = args.item; // Get the edited item
-          const jobItemSgt = editedItem.JobItemSgt; // Access the JobItemSgt property of the edited item
-          console.log("Edited Item:", editedItem);
-          console.log("JobItemSgt of Edited Item:", jobItemSgt);
-        },
       });
     }
   }, [apiData]);
@@ -156,6 +174,11 @@ const FormComponent = ({
       window.dispatchEvent(new Event("resize"));
     }, 750); // Delay of 100 milliseconds
   };
+
+  function openEditForm(item) {
+    setEditItem(item); // Set the item being edited
+    setIsEditing(true); // Set editing mode to true
+  }
 
   useEffect(() => {
     // Attach event listener to the tab when the component mounts
@@ -296,17 +319,17 @@ const FormComponent = ({
 
   useEffect(() => {
     // Initialize Select2 when the component mounts or department changes
-    const $select = $(selectRef.current);
-    const $timeSelect = $(timeRef.current);
-    $timeSelect.select2({
+
+    $("#timeSelection").select2({
       minimumResultsForSearch: -1,
     });
-    $select.select2({
+    $("#optionSelection").select2({
       closeOnSelect: false, // Keep the dropdown open after selecting an option
     });
 
     return () => {
-      $select.select2("destroy");
+      $("#timeSelection").select2("destroy");
+      $("#optionSelection").select2("destroy");
     };
   }, [department]); // Re-run this effect whenever the department changes
 
@@ -406,7 +429,7 @@ const FormComponent = ({
               <label>選項</label>
               <select
                 className="select2bs4 select2-hidden-accessible"
-                id="selection"
+                id="optionSelection"
                 style={{ width: "100%" }}
                 ref={selectRef}
                 multiple
@@ -467,7 +490,37 @@ const FormComponent = ({
           <div className="row">
             <div className="col-12">
               <h5>工作日誌 {department}</h5>
-              <div id="jsGrid"></div>
+              <div id="jsGrid">
+                {/* Place EditForm component outside of the grid's div */}
+                {isEditing && editItem && (
+                  <div
+                    className=" edit-form-overlay"
+                    style={{
+                      position: "fixed",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      zIndex: 9999,
+
+                      overflowY: "auto",
+                    }}
+                  >
+                    <EditForm
+                      item={editItem}
+                      onSubmit={(updatedItem) => {
+                        console.log(updatedItem);
+                        setIsEditing(false);
+                        fetchDataFromAPI(departmentNameEng); // This should refresh the data in the grid
+                      }}
+                      department={department}
+                      departmentOptions={departmentOptions}
+                      onCancel={() => setIsEditing(false)}
+                      fetchDataFromAPI={fetchDataFromAPI} // Passing the function
+                      departmentNameEng={departmentNameEng}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
