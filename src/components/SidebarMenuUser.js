@@ -83,7 +83,7 @@ const SidebarMenuUser = ({
             <li className="nav-item">
               <div
                 className={`nav-link ${departName === "業務" ? "active" : ""}`}
-                onClick={() => handleClick("Sales")}
+                onClick={() => handleConditionalClick("Sales")}
               >
                 <i className="far fa-circle nav-icon" />
                 <p>業務處</p>
@@ -92,7 +92,7 @@ const SidebarMenuUser = ({
             <li className="nav-item">
               <div
                 className={`nav-link ${departName === "工程" ? "active" : ""}`}
-                onClick={() => handleClick("Industry")}
+                onClick={() => handleConditionalClick("Industry")}
               >
                 <i className="far fa-circle nav-icon" />
                 <p>工程處</p>
@@ -101,7 +101,7 @@ const SidebarMenuUser = ({
             <li className="nav-item">
               <div
                 className={`nav-link ${departName === "採購" ? "active" : ""}`}
-                onClick={() => handleClick("Materials")}
+                onClick={() => handleConditionalClick("Materials")}
               >
                 <i className="far fa-circle nav-icon" />
                 <p>採購部</p>
@@ -110,7 +110,7 @@ const SidebarMenuUser = ({
             <li className="nav-item">
               <div
                 className={`nav-link ${departName === "品保" ? "active" : ""}`}
-                onClick={() => handleClick("QualityAssurance")}
+                onClick={() => handleConditionalClick("QualityAssurance")}
               >
                 <i className="far fa-circle nav-icon" />
                 <p>品保部</p>

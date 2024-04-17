@@ -107,7 +107,7 @@ const FormComponent = ({
                   "data-item-id": item.JobItemSgt, // Pass the JobItemSgt as data attribute
                   style: `width: ${buttonWidth}px`, // Set the width of the button dynamically
                 })
-                .text("Edit")
+                .text("編輯")
                 .on("click", function () {
                   // Handle edit button click
                   openEditForm(item); // Call a function to open the edit form with the item data
@@ -120,7 +120,7 @@ const FormComponent = ({
                   "data-item-id": item.JobItemSgt, // Pass the JobItemSgt as data attribute
                   style: `width: ${buttonWidth}px`, // Set the width of the button dynamically
                 })
-                .text("Delete")
+                .text("刪除")
                 .on("click", function () {
                   // Trigger the onItemDeleting event when the delete button is clicked
                   $("#jsGrid").jsGrid("deleteItem", item); // Trigger delete action
