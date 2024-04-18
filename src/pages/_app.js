@@ -52,7 +52,7 @@ const App = ({ Component, pageProps }) => {
     setUserID(userID);
 
     // Check if the user is an admin
-    const isAdmin = departName === "智慧管理部";
+    const isAdmin = departName === "智慧管理部" || departName === "CEO";
     setIsAdmin(isAdmin); // Assuming you have a state variable for admin status
 
     // Set the selected department based on user role
