@@ -22,18 +22,35 @@ const FormComponent = ({
         apiData[key].forEach((item) => {
           // Convert UTC date string to a Date object
           const createdDateTime = new Date(item.CreatedTime);
+          const updatedDateTime = new Date(item.UpdatedTime);
 
+          // Adjust for the local timezone offset
+          const utcOffset = -8 * 60 * 60 * 1000;
           // Since the API returns UTC time, we need to manually adjust it to UTC+8
           const offset = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
           const localCreatedTime = new Date(createdDateTime.getTime() + offset);
+          const localUpdatedTime = new Date(
+            updatedDateTime.getTime() + utcOffset
+          );
 
           // Format the date to get YYYY-MM-DD format
           const createdDateStr = localCreatedTime.toISOString().split("T")[0];
+          const updatedDateStr = localUpdatedTime.toISOString().split("T")[0];
+          const updatedTimeStr = localUpdatedTime.toTimeString().slice(0, 8); // Extract HH:mm:ss
 
+          // Format the time to get HH:MM:SS format
+          const createdTimeStr = localCreatedTime
+            .toISOString()
+            .split("T")[1]
+            .slice(0, 8);
+
+          // Combine the date and time for the 創建日期 field
+          const formattedCreatedDateTime = `${createdDateStr} ${createdTimeStr}`;
+          const formattedUpdatedDateTime = `${updatedDateStr} ${updatedTimeStr}`;
           // Log the formatted created date and time
           console.log(
             `Formatted Created DateTime for ${item.PersonID}:`,
-            createdDateStr
+            formattedCreatedDateTime
           );
 
           // Include JobItemSgt property in each row
@@ -48,13 +65,12 @@ const FormComponent = ({
             新呈料號: item.EverbizCode,
             花費時間: item.WorkHour,
             選項: item.JobTypeCode,
-            日期: createdDateStr, // Use just the date for grid display
-            創建日期: createdDateStr, // Assuming you want the same date format for creation
+            日期: createdDateStr, // Use just the date for this field
+            創建日期: formattedUpdatedDateTime, // Include the full date and time
             備註: item.Remark,
           });
         });
       });
-
       // Initialize JSGrid with the formatted data
       $("#jsGrid").jsGrid({
         width: "100%",
