@@ -18,39 +18,30 @@ const FormComponentUser = ({
   const [editItem, setEditItem] = useState(null);
   useEffect(() => {
     if (apiData) {
-      // Parse the API data and format it according to JSGrid's data structure
       const formattedData = [];
       Object.keys(apiData).forEach((key) => {
         apiData[key].forEach((item) => {
+          // Convert UTC date string to a Date object
           const createdDateTime = new Date(item.CreatedTime);
-          const updatedDateTime = new Date(item.UpdatedTime);
 
-          // Adjust for the local timezone offset
-          const utcOffset = -8 * 60 * 60 * 1000;
+          // Since the API returns UTC time, we need to manually adjust it to UTC+8
+          const offset = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+          const localCreatedTime = new Date(createdDateTime.getTime() + offset);
 
-          // Apply the offset to the created and updated date time
-          const localCreatedTime = new Date(
-            createdDateTime.getTime() + utcOffset
-          );
-          const localUpdatedTime = new Date(
-            updatedDateTime.getTime() + utcOffset
-          );
-
-          // Format the date and time
+          // Format the date to get YYYY-MM-DD format
           const createdDateStr = localCreatedTime.toISOString().split("T")[0];
-          const updatedDateStr = localUpdatedTime.toISOString().split("T")[0];
-          const updatedTimeStr = localUpdatedTime.toTimeString().slice(0, 8); // Extract HH:mm:ss
 
-          // Combine date and time strings
-          const formattedCreatedDateTime = `${createdDateStr} `;
-          const formattedUpdatedDateTime = `${updatedDateStr} ${updatedTimeStr}`;
+          // Log the formatted created date and time
+          console.log(
+            `Formatted Created DateTime for ${item.PersonID}:`,
+            createdDateStr
+          );
 
           // Include JobItemSgt property in each row
           item.JobItemSgt = key;
 
           formattedData.push({
-            JobItemSgt: key, // Include JobItemSgt property
-
+            JobItemSgt: key,
             員工編號: item.PersonID,
             客戶編號: item.CustomerName,
             專案名稱: item.ProjectName,
@@ -58,8 +49,8 @@ const FormComponentUser = ({
             新呈料號: item.EverbizCode,
             花費時間: item.WorkHour,
             選項: item.JobTypeCode,
-            日期: formattedCreatedDateTime,
-            創建日期: formattedUpdatedDateTime,
+            日期: createdDateStr, // Use just the date for grid display
+            創建日期: createdDateStr, // Assuming you want the same date format for creation
             備註: item.Remark,
           });
         });
