@@ -59,6 +59,14 @@ const IndexUser = ({ selectedDepartment, departName, userID }) => {
     "稽核",
     "(空白)",
     "RDT測試",
+    "製作電子檔品檢報告E化,(ESP)",
+    "Soam報告及圖面歸位,(ESP歸檔)",
+    "Email收發",
+    "日,月報表製作",
+    "加工戶單寫入,(KEY IN)",
+    "協助收貨",
+    "力登大功率,本廠標籤整理(印製Label)",
+    "吉嘉ROHS報告收發與歸檔(OneDrive)",
   ];
 
   const [apiData, setApiData] = useState(null);
