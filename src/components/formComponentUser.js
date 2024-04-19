@@ -440,7 +440,7 @@ const FormComponentUser = ({
                 className="form-control form-control-border"
                 wrapperClassName="datePicker"
                 dateFormat="MM/dd/yyyy"
-                placeholderText="選擇日期"
+                placeholderText="點擊選擇日期"
               />
             </div>
 
