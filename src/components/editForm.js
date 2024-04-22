@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const EditForm = ({
   item,
@@ -19,6 +21,26 @@ const EditForm = ({
     remark: item.備註,
     timeSelection: item.花費時間,
   });
+  const [date, setDate] = useState(() => {
+    const initialDate = new Date(item.日期);
+    initialDate.setHours(0, 0, 0, 0); // Reset time to midnight
+    return initialDate;
+  });
+
+  const handleDateChange = (newDate) => {
+    const localDate = new Date(newDate);
+    localDate.setHours(0, 0, 0, 0); // Ensure the time is set to midnight
+    setDate(localDate);
+  };
+
+  // Function to generate the correct ISO string for submission or logging
+  const generateUTCDateString = (date) => {
+    const dateCopy = new Date(date.getTime());
+    const offset = date.getTimezoneOffset(); // in minutes
+    dateCopy.setMinutes(dateCopy.getMinutes() - offset); // Adjust for timezone difference
+    return dateCopy.toISOString().substring(0, 10); // Convert to ISO string
+  };
+
   // Handler for form submission
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent the default form submission behavior
@@ -33,9 +55,11 @@ const EditForm = ({
       remark: inputValues.remark,
       workHour: inputValues.timeSelection, // Directly use the state updated from select2
       jobTypeCode: selectedOptions.join(", "), // Use the updated state for selected options
+      createdTime: generateUTCDateString(date),
     };
 
     console.log("Submitting Updated Item:", updatedItem);
+    console.log("Date Submitted:", generateUTCDateString(date));
 
     // API call to update the database
     try {
@@ -236,11 +260,11 @@ const EditForm = ({
           <div className="row">
             <div className="form-group col-6">
               <label>日期</label>
-              <input
-                type="text"
+              <DatePicker
+                selected={date}
+                onChange={handleDateChange}
                 className="form-control form-control-border"
-                value={item.日期}
-                readOnly // Make the date field read-only
+                dateFormat="yyyy/MM/dd" // Adjust date format as needed
               />
             </div>
             <div className="form-group col-6">

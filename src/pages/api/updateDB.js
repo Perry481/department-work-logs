@@ -13,6 +13,7 @@ export default async function handler(req, res) {
       workHour,
       jobTypeCode,
       remark,
+      createdTime,
     } = req.body;
 
     // Connect to your SQL Server
@@ -30,7 +31,7 @@ export default async function handler(req, res) {
       // Define the SQL query to update data in the table
       const sqlQuery = `
         UPDATE [dbo].[absKPJobItem]
-        SET PersonID = @PersonID, CustomerName = @CustomerName, ProjectName = @ProjName, ProductName = @ProdName, 
+        SET PersonID = @PersonID, CustomerName = @CustomerName, ProjectName = @ProjName, ProductName = @ProdName, CreatedTime = @CreatedTime,
             EverbizCode = @ProdID, WorkHour = @WorkHour, JobTypeCode = @JobTypeCode, Remark = @Remark, UpdatedTime = GETDATE()
         WHERE JobItemSgt = @JobItemSgt;
       `;
@@ -48,6 +49,7 @@ export default async function handler(req, res) {
       request.input("WorkHour", workHour);
       request.input("JobTypeCode", jobTypeCode);
       request.input("Remark", remark);
+      request.input("CreatedTime", createdTime);
 
       // Execute the SQL query
       const result = await request.query(sqlQuery);
