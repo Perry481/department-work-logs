@@ -48,10 +48,10 @@ const FormComponent = ({
           const formattedCreatedDateTime = `${createdDateStr} ${createdTimeStr}`;
           const formattedUpdatedDateTime = `${updatedDateStr} ${updatedTimeStr}`;
           // Log the formatted created date and time
-          console.log(
-            `Formatted Created DateTime for ${item.PersonID}:`,
-            formattedCreatedDateTime
-          );
+          // console.log(
+          //   `Formatted Created DateTime for ${item.PersonID}:`,
+          //   formattedCreatedDateTime
+          // );
 
           // Include JobItemSgt property in each row
           item.JobItemSgt = key;
@@ -250,6 +250,10 @@ const FormComponent = ({
   const handleFormSubmit = async (event) => {
     // Prevent the default form submission
     event.preventDefault();
+    if (!selectedDate) {
+      alert("請選擇日期!");
+      return; // Exit the function if no date is selected
+    }
 
     // Validate the required fields
     if (inputValues.personID === "") {

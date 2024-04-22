@@ -234,7 +234,10 @@ const FormComponentUser = ({
   const handleFormSubmit = async (event) => {
     // Prevent the default form submission
     event.preventDefault();
-
+    if (!selectedDate) {
+      alert("請選擇日期!");
+      return; // Exit the function if no date is selected
+    }
     // Validate the required fields
     if (inputValues.personID === "") {
       // Optionally, provide user feedback or validation messages
