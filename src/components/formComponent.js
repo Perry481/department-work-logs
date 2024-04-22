@@ -74,7 +74,7 @@ const FormComponent = ({
       // Initialize JSGrid with the formatted data
       $("#jsGrid").jsGrid({
         width: "100%",
-        height: "400px",
+        height: "500px",
         inserting: false,
         editing: false,
         deleting: true,
