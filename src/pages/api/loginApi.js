@@ -7,7 +7,11 @@ export const config = {
 };
 
 // Function to map DepartID to DepartName
-function getDepartName(departID) {
+function getDepartName(departID, employeeID) {
+  if (employeeID === "22124") {
+    return "品保";
+  }
+
   if (departID.startsWith("B51")) {
     return "智慧管理部";
   } else if (departID.startsWith("A0")) {
@@ -58,7 +62,7 @@ export default async function handler(req, res) {
       // Modify the result to include DepartName
       const modifiedResult = result.recordset.map((record) => ({
         ...record,
-        DepartName: getDepartName(record.DepartID),
+        DepartName: getDepartName(record.DepartID, record.EmployeeID),
       }));
 
       // Send the modified result as a response
