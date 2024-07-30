@@ -40,6 +40,9 @@ const HomePage = ({ selectedDepartment, departName, userID }) => {
     "製作作業流程圖",
     "製作治具",
     "支援產線",
+    "材料承認",
+    "GP/客戶文件製作",
+    "客戶/供應商聯絡",
   ];
   const departmentMaterials = ["包裝", "文件製作", "送貨", "(空白)", "其他"];
   const departmentQualityAssurance = [

@@ -1,6 +1,38 @@
-[2024/4/18 下午3:10:30] Received GET request from 127.0.0.1 for /
-[2024/4/18 下午3:10:48] Received DELETE request from 127.0.0.1 for /api/deleteDB
-[2024/4/18 下午3:11:05] Received DELETE request from 127.0.0.1 for /api/deleteDB
-[2024/4/18 下午3:11:17] Received DELETE request from 127.0.0.1 for /api/deleteDB
-[2024/4/18 下午3:11:20] Received DELETE request from 127.0.0.1 for /api/deleteDB
-[2024/4/18 下午3:11:23] Received DELETE request from 127.0.0.1 for /api/deleteDB
+
+> department-work-logs@0.1.0 start
+> node workLogsServer.js
+
+> Ready on http://localhost:3002
+[2024/7/29 下午3:19:22] Received GET request from 192.168.0.236 for /
+[2024/7/29 下午3:20:14] Received GET request from 192.168.0.236 for /
+[2024/7/29 下午3:22:08] Received GET request from 192.168.0.236 for /
+[2024/7/29 下午3:22:17] Received GET request from 192.168.0.236 for /
+[2024/7/29 下午3:24:43] Received GET request from 192.168.0.236 for /
+[2024/7/29 下午3:25:22] Received GET request from 192.168.0.236 for /
+[2024/7/29 下午3:35:13] Received GET request from 192.168.0.236 for /
+[2024/7/29 下午3:37:51] Received GET request from 192.168.0.236 for /
+[2024/7/29 下午3:41:30] Received GET request from 192.168.0.236 for /
+[2024/7/29 下午3:44:33] Received GET request from 192.168.100.10 for /
+[2024/7/29 下午3:52:50] Received GET request from 192.168.0.197 for /
+[2024/7/29 下午4:33:23] Received GET request from 192.168.0.93 for /
+[2024/7/29 下午4:50:14] Received GET request from 192.168.0.100 for /
+[2024/7/29 下午4:52:18] Received GET request from 192.168.0.100 for /
+[2024/7/29 下午4:53:35] Received GET request from 192.168.0.188 for /
+[2024/7/29 下午5:00:32] Received GET request from 192.168.0.193 for /
+[2024/7/29 下午5:02:01] Received GET request from 192.168.0.244 for /
+[2024/7/29 下午5:02:30] Received GET request from 192.168.100.61 for /
+[2024/7/29 下午5:02:51] Received GET request from 192.168.0.133 for /
+[2024/7/29 下午5:02:58] Received GET request from 192.168.0.116 for /
+[2024/7/29 下午5:05:08] Received GET request from 192.168.0.71 for /
+[2024/7/29 下午5:05:58] Received GET request from 192.168.0.248 for /
+[2024/7/29 下午5:06:09] Received GET request from 192.168.0.64 for /
+[2024/7/29 下午5:15:13] Received GET request from 192.168.0.170 for /
+[2024/7/29 下午5:15:24] Received GET request from 192.168.0.173 for /
+[2024/7/29 下午5:17:03] Received GET request from 192.168.0.76 for /
+[2024/7/29 下午5:27:32] Received GET request from 192.168.100.16 for /
+[2024/7/29 下午6:05:18] Received POST request from 192.168.0.149 for /api/updateDB
+[2024/7/30 上午8:06:35] Received GET request from 192.168.0.236 for /
+[2024/7/30 上午8:24:36] Received GET request from 192.168.0.236 for /
+[2024/7/30 上午9:42:23] Received GET request from 192.168.0.236 for /
+[2024/7/30 上午9:59:51] Received GET request from 192.168.0.236 for /
+[2024/7/30 上午10:11:42] Received GET request from 192.168.0.236 for /
