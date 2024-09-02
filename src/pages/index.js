@@ -188,6 +188,19 @@ const HomePage = ({ selectedDepartment, departName, userID }) => {
                 工作日誌({departmentName})
               </a>
             </li>
+            <li className="nav-item">
+              <a
+                className="nav-link"
+                id="tabs-department-data-tab"
+                data-toggle="pill"
+                href="#tabs-department-data"
+                role="tab"
+                aria-controls="tabs-department-data"
+                aria-selected="false"
+              >
+                部門資料
+              </a>
+            </li>
           </ul>
         </div>
 

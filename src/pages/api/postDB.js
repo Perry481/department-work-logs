@@ -45,7 +45,7 @@ export default async function handler(req, res) {
       request.input("ProductName", productName);
       request.input("EverbizCode", everbizCode);
       request.input("WorkHour", workHour);
-      request.input("JobTypeCode", jobTypes.join(",")); // Convert jobTypes array to comma-separated string
+      request.input("JobTypeCode", jobTypes.join(","));
       request.input("Remark", remark);
       request.input("CreatedTime", createdTime);
       request.input("DepartmentName", departmentName);

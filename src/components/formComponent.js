@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import EditForm from "./editForm";
+import SearchDialog from "./SearchDialog";
+import DepartmentDataComponent from "./DepartmentDataComponent";
 const FormComponent = ({
   department,
   departmentOptions,
@@ -10,51 +12,85 @@ const FormComponent = ({
   fetchDataFromAPI,
   userID,
 }) => {
-  // State to track whether editing mode is active
   const [isEditing, setIsEditing] = useState(false);
-
-  // State to store the item being edited
   const [editItem, setEditItem] = useState(null);
+  const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+  const [gridData, setGridData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchCriteria, setSearchCriteria] = useState(null);
+  const [activeSubTab, setActiveSubTab] = useState("使用者");
+  const originalDataRef = useRef([]);
+
+  const gridRef = useRef(null);
+
+  const renderDepartmentData = () => {
+    if (!apiData) return <p>No data available</p>;
+
+    const allData = Object.values(apiData).flat();
+
+    return (
+      <div className="table-responsive">
+        <table className="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>員工編號</th>
+              <th>客戶編號</th>
+              <th>專案名稱</th>
+              <th>產品名稱</th>
+              <th>新呈料號</th>
+              <th>花費時間</th>
+              <th>選項</th>
+              <th>日期</th>
+              <th>備註</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allData.map((item, index) => (
+              <tr key={index}>
+                <td>{item.PersonID}</td>
+                <td>{item.CustomerName}</td>
+                <td>{item.ProjectName}</td>
+                <td>{item.ProductName}</td>
+                <td>{item.EverbizCode}</td>
+                <td>{item.WorkHour}</td>
+                <td>{item.JobTypeCode}</td>
+                <td>{new Date(item.CreatedTime).toLocaleDateString()}</td>
+                <td>{item.Remark}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   useEffect(() => {
     if (apiData) {
       const formattedData = [];
+
       Object.keys(apiData).forEach((key) => {
         apiData[key].forEach((item) => {
-          // Convert UTC date string to a Date object
           const createdDateTime = new Date(item.CreatedTime);
           const updatedDateTime = new Date(item.UpdatedTime);
 
-          // Adjust for the local timezone offset
           const utcOffset = -8 * 60 * 60 * 1000;
-          // Since the API returns UTC time, we need to manually adjust it to UTC+8
-          const offset = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+          const offset = 8 * 60 * 60 * 1000;
           const localCreatedTime = new Date(createdDateTime.getTime() + offset);
           const localUpdatedTime = new Date(
             updatedDateTime.getTime() + utcOffset
           );
 
-          // Format the date to get YYYY-MM-DD format
           const createdDateStr = localCreatedTime.toISOString().split("T")[0];
           const updatedDateStr = localUpdatedTime.toISOString().split("T")[0];
-          const updatedTimeStr = localUpdatedTime.toTimeString().slice(0, 8); // Extract HH:mm:ss
+          const updatedTimeStr = localUpdatedTime.toTimeString().slice(0, 8);
 
-          // Format the time to get HH:MM:SS format
           const createdTimeStr = localCreatedTime
             .toISOString()
             .split("T")[1]
             .slice(0, 8);
 
-          // Combine the date and time for the 創建日期 field
           const formattedCreatedDateTime = `${createdDateStr} ${createdTimeStr}`;
           const formattedUpdatedDateTime = `${updatedDateStr} ${updatedTimeStr}`;
-          // Log the formatted created date and time
-          // console.log(
-          //   `Formatted Created DateTime for ${item.PersonID}:`,
-          //   formattedCreatedDateTime
-          // );
-
-          // Include JobItemSgt property in each row
-          item.JobItemSgt = key;
 
           formattedData.push({
             JobItemSgt: key,
@@ -65,14 +101,27 @@ const FormComponent = ({
             新呈料號: item.EverbizCode,
             花費時間: item.WorkHour,
             選項: item.JobTypeCode,
-            日期: createdDateStr, // Use just the date for this field
-            創建日期: formattedUpdatedDateTime, // Include the full date and time
+            日期: createdDateStr,
+            創建日期: formattedUpdatedDateTime,
             備註: item.Remark,
           });
         });
       });
-      // Initialize JSGrid with the formatted data
-      $("#jsGrid").jsGrid({
+
+      console.log("Formatted Data:", formattedData);
+      setGridData(formattedData);
+      // Store in ref instead of state
+      originalDataRef.current = formattedData;
+    }
+  }, [apiData, department]);
+
+  useEffect(() => {
+    console.log("Grid Data updated:", gridData);
+    if (gridRef.current) {
+      gridRef.current.jsGrid("option", "data", gridData);
+      gridRef.current.jsGrid("openPage", 1);
+    } else {
+      let grid = $("#jsGrid").jsGrid({
         width: "100%",
         height: "500px",
         inserting: false,
@@ -80,70 +129,96 @@ const FormComponent = ({
         deleting: true,
         sorting: true,
         paging: true,
-        data: formattedData,
+        data: gridData,
         deleteConfirm: "確定從資料庫中刪除此筆資料?",
         fields: [
-          { name: "員工編號", type: "text", width: 100, editing: false },
+          { name: "員工編號", type: "text", width: 60, editing: false },
           { name: "客戶編號", type: "text", width: 100 },
-          { name: "專案名稱", type: "text", width: 150 },
-          { name: "產品名稱", type: "text", width: 150 },
+          { name: "專案名稱", type: "text", width: 120 },
+          { name: "產品名稱", type: "text", width: 120 },
           { name: "新呈料號", type: "text", width: 100 },
-          { name: "花費時間", type: "text", width: 50 }, //less than 10 hours
-          {
-            name: "選項",
-            type: "text",
-            width: 150,
-          },
+          { name: "花費時間", type: "text", width: 50 },
+          { name: "選項", type: "text", width: 150 },
           { name: "日期", type: "text", width: 100 },
           { name: "創建日期", type: "text", width: 150, editing: false },
           { name: "備註", type: "text", width: 125 },
           {
             type: "control",
-            width: 75,
+            width: 100,
+            headerTemplate: function () {
+              const $container = $("<div>").css({
+                display: "flex",
+                justifyContent: "space-between",
+                width: "100%",
+              });
+
+              const $searchButton = $("<button>")
+                .attr({
+                  class: "btn btn-default btn-sm search-btn",
+                  title: "Search",
+                })
+                .append($("<i>").addClass("fas fa-search"))
+                .on("click", function (e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsSearchDialogOpen(true);
+                });
+
+              const $resetButton = $("<button>")
+                .attr({
+                  class: "btn btn-secondary btn-sm reset-btn",
+                  title: "Reset Search",
+                })
+                .text("Reset")
+                .on("click", function (e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  resetSearch();
+                });
+
+              return $container.append($searchButton).append($resetButton);
+            },
             itemTemplate: (_, item) => {
               const buttonWidth = $("#jsGrid")
                 .find("tr.jsgrid-insert-row")
                 .children()
                 .last()
-                .width(); // Get the width of the last column
+                .width();
 
               const $editButton = $("<button>")
                 .attr({
                   class: "btn btn-primary btn-sm edit-btn",
-                  title: "Edit", // Add a title for tooltip
-                  "data-item-id": item.JobItemSgt, // Pass the JobItemSgt as data attribute
-                  style: `width: ${buttonWidth}px`, // Set the width of the button dynamically
+                  title: "Edit",
+                  "data-item-id": item.JobItemSgt,
+                  style: `width: ${buttonWidth}px`,
                 })
                 .text("編輯")
                 .on("click", function () {
-                  // Handle edit button click
-                  openEditForm(item); // Call a function to open the edit form with the item data
+                  openEditForm(item);
                 });
 
               const $deleteButton = $("<button>")
                 .attr({
                   class: "btn btn-danger btn-sm delete-btn",
-                  title: "Delete", // Add a title for tooltip
-                  "data-item-id": item.JobItemSgt, // Pass the JobItemSgt as data attribute
-                  style: `width: ${buttonWidth}px`, // Set the width of the button dynamically
+                  title: "Delete",
+                  "data-item-id": item.JobItemSgt,
+                  style: `width: ${buttonWidth}px`,
                 })
                 .text("刪除")
                 .on("click", function () {
-                  // Trigger the onItemDeleting event when the delete button is clicked
-                  $("#jsGrid").jsGrid("deleteItem", item); // Trigger delete action
+                  $("#jsGrid").jsGrid("deleteItem", item);
                   console.log("Deleting", item);
                 });
 
-              return $("<div>").append($editButton, $deleteButton); // Append both buttons to a div and return
+              return $("<div>").append($editButton, $deleteButton);
             },
           },
         ],
         onItemDeleting: function (args) {
-          const deletedItem = args.item; // Item to be deleted
-          const jobItemSgt = deletedItem.JobItemSgt; // Access the JobItemSgt property directly
+          const deletedItem = args.item;
+          const jobItemSgt = deletedItem.JobItemSgt;
           console.log("Deleting the JobItemSgt:", jobItemSgt);
 
-          // Make an API call to delete the item from the database
           fetch(`/api/deleteDB`, {
             method: "DELETE",
             headers: {
@@ -162,16 +237,44 @@ const FormComponent = ({
             .then((data) => {
               console.log("Item deleted successfully:", data);
               alert("已刪除");
-              // Optionally, you can refresh the grid or perform any other action after successful deletion
             })
             .catch((error) => {
               console.error("Error deleting item:", error);
-              // Handle error, show error message, etc.
             });
         },
       });
+
+      gridRef.current = grid;
     }
-  }, [apiData]);
+  }, [gridData]); // Log whenever originalDataRef.current changes
+  useEffect(() => {
+    console.log("Original Data (ref):", originalDataRef.current);
+  }, [originalDataRef.current]);
+
+  const handleSearch = (criteria) => {
+    console.log("Search criteria:", criteria);
+    const filtered = originalDataRef.current.filter((item) => {
+      return (
+        (!criteria.employeeId || item.員工編號.includes(criteria.employeeId)) &&
+        (!criteria.customerId || item.客戶編號.includes(criteria.customerId)) &&
+        (!criteria.productName ||
+          item.產品名稱.includes(criteria.productName)) &&
+        (!criteria.productId || item.新呈料號.includes(criteria.productId)) &&
+        (!criteria.workHours ||
+          item.花費時間.toString() === criteria.workHours) &&
+        (!criteria.date ||
+          item.日期 === criteria.date.toISOString().split("T")[0])
+      );
+    });
+    console.log("Filtered data:", filtered);
+    setGridData(filtered);
+  };
+
+  const resetSearch = () => {
+    console.log("Resetting search. Original data:", originalDataRef.current);
+    setGridData(originalDataRef.current);
+  };
+
   const handleTabClick = () => {
     // Refresh the grid when the tab is clicked
     console.log("Tab clicked, refreshing grid...");
@@ -346,6 +449,13 @@ const FormComponent = ({
 
   return (
     <div className="card-body">
+      <SearchDialog
+        isOpen={isSearchDialogOpen}
+        onClose={() => setIsSearchDialogOpen(false)}
+        onSearch={handleSearch}
+        initialCriteria={searchCriteria}
+      />
+
       <div className="tab-content" id="custom-tabs-four-tabContent">
         {/* form */}
         <div
@@ -491,7 +601,6 @@ const FormComponent = ({
             </button>
           </div>
         </div>
-
         <div
           className="tab-pane fade"
           id="tabs-logs-from-database"
@@ -501,6 +610,7 @@ const FormComponent = ({
           <div className="row">
             <div className="col-12">
               <h5>工作日誌 {department}</h5>
+
               <div id="jsGrid">
                 {/* Place EditForm component outside of the grid's div */}
                 {isEditing && editItem && (
@@ -534,6 +644,14 @@ const FormComponent = ({
               </div>
             </div>
           </div>
+        </div>
+        <div
+          className="tab-pane fade"
+          id="tabs-department-data"
+          role="tabpanel"
+          aria-labelledby="tabs-department-data-tab"
+        >
+          <DepartmentDataComponent apiData={apiData} department={department} />
         </div>
       </div>
     </div>
