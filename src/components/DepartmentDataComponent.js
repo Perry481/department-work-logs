@@ -114,12 +114,24 @@ const StyledCheckbox = styled.input`
   margin-right: 5px;
 `;
 
+const NoDataMessage = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  font-size: 1.2rem;
+  color: #666;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+`;
+
 const DepartmentDataComponent = React.memo(({ apiData, department }) => {
   const [activeTab, setActiveTab] = useState("使用者");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [filteredData, setFilteredData] = useState([]);
   const [names, setNames] = useState({ persons: {}, customers: {} });
-  const [showBlank, setShowBlank] = useState(false);
+  const [showBlank, setShowBlank] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
   const chartRef = useRef(null);
 
@@ -245,7 +257,9 @@ const DepartmentDataComponent = React.memo(({ apiData, department }) => {
       return Object.values(aggregatedData).sort((a, b) => b.value - a.value);
     }
   }, [activeTab, selectedUser, getUserDetails, aggregateData, filteredData]);
-
+  const hasData = useMemo(() => {
+    return chartData.length > 0;
+  }, [chartData]);
   const handleChartClick = useCallback(
     (params) => {
       if (activeTab === "使用者" && !selectedUser) {
@@ -258,7 +272,7 @@ const DepartmentDataComponent = React.memo(({ apiData, department }) => {
   );
 
   const chartOption = useMemo(() => {
-    if (filteredData.length === 0) {
+    if (!hasData) {
       return null;
     }
 
@@ -360,6 +374,10 @@ const DepartmentDataComponent = React.memo(({ apiData, department }) => {
     }
   }, [filteredData, activeTab, selectedUser, chartData, names, getUserDetails]);
   const chartTitle = useMemo(() => {
+    if (!hasData) {
+      return "無資料";
+    }
+
     if (activeTab === "使用者" && selectedUser) {
       const userName = names.persons[selectedUser] || selectedUser;
       return `${userName} (${selectedUser}) 的客戶工時分佈`;
@@ -372,7 +390,7 @@ const DepartmentDataComponent = React.memo(({ apiData, department }) => {
         ? "客戶工時統計"
         : "產品工時統計";
     }
-  }, [activeTab, selectedUser, names]);
+  }, [activeTab, selectedUser, names, hasData]);
 
   if (!apiData) {
     return <p>Loading data...</p>;
@@ -459,21 +477,29 @@ const DepartmentDataComponent = React.memo(({ apiData, department }) => {
             <label htmlFor="showBlank">顯示空白數據</label>
           </CheckboxContainer>
         </ChartHeader>
-        {chartOption && (
-          <ReactECharts
-            ref={chartRef}
-            option={chartOption}
-            style={{ height: "400px" }}
-            onEvents={{ click: handleChartClick }}
-          />
-        )}
-        {selectedUser && (
-          <button
-            onClick={() => setSelectedUser(null)}
-            className="btn btn-secondary mt-2"
-          >
-            返回使用者總覽
-          </button>
+        {hasData ? (
+          <>
+            {chartOption && (
+              <ReactECharts
+                ref={chartRef}
+                option={chartOption}
+                style={{ height: "400px" }}
+                onEvents={{ click: handleChartClick }}
+              />
+            )}
+            {selectedUser && (
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="btn btn-secondary mt-2"
+              >
+                返回使用者總覽
+              </button>
+            )}
+          </>
+        ) : (
+          <NoDataMessage>
+            未找到符合條件的資料。請嘗試調整日期或篩選條件。
+          </NoDataMessage>
         )}
       </div>
     </div>
